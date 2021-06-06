@@ -1,23 +1,21 @@
 version: "3"
 
 networks:
-  fastapi-example:
+  main:
 
 services:
-  fastapi-example:
+  api:
     build:
       context: .
       dockerfile: ./docker/fastapi/Dockerfile
     networks:
-      - fastapi-example
+      - main
     ports:
       - 8080:8080
     volumes:
       - ./app:/app
-    networks:
-      - fastapi-example
     env_file:
-      - ${FASTAPI_EXAMPLE_ENV}
+      - ${APP_ENV}
     command: >
       /bin/bash -c "
       if [ "${RELOAD}" == "true" ]; then
