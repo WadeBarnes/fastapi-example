@@ -1,0 +1,27 @@
+version: "3"
+
+networks:
+  fastapi-example:
+
+services:
+  fastapi-example:
+    build:
+      context: .
+      dockerfile: ./docker/fastapi/Dockerfile
+    networks:
+      - fastapi-example
+    ports:
+      - 8080:8080
+    volumes:
+      - ./app:/app
+    networks:
+      - fastapi-example
+    env_file:
+      - ${FASTAPI_EXAMPLE_ENV}
+    command: >
+      /bin/bash -c "
+      if [ "${RELOAD}" == "true" ]; then
+        /start-reload.sh
+      else
+        /start.sh
+      fi"
