@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
+from httpx import AsyncClient
 
 app = FastAPI()
 
@@ -24,3 +25,14 @@ async def read_item(item_id: int, q: Optional[str] = None):
 @app.put("/items/{item_id}")
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "is_now": item.price, "item_id": item_id}
+
+
+# References:
+#  - https://stackoverflow.com/questions/63872924/how-can-i-send-an-http-request-from-my-fastapi-app-to-another-site-api
+#  - https://fastapi.tiangolo.com/advanced/async-tests/#httpx
+URL = "https://httpbin.org/uuid"
+@app.get("/uuid")
+async def read_uuid():
+    async with AsyncClient() as client:
+        response = await client.get(URL)
+    return response.json()
