@@ -173,9 +173,17 @@ function getImages(){
     ymlFile=${1}
     unset images
     if [ -f ${ymlFile} ]; then
-      image="$(${YQ_EXE} eval '.services[].image' ${ymlFile})"
+      images="$(${YQ_EXE} eval '.services[].image' ${ymlFile})"
     fi
-    echo "${image}"
+
+    if [ -z "${images}" ] || [[ ${images} == *"null"* ]]; then
+      unset images
+      services=$(getServices ${ymlFile})
+      for service in ${services}; do
+        images+="${images:+" "}${COMPOSE_PROJECT_NAME}_${service}"
+      done
+    fi
+    echo "${images}"
   )
 }
 
@@ -239,7 +247,6 @@ function restart(){
 function clean(){
   (
     down
-    deleteData
     echoGreen "\nRemoving project images ...\n"
     ${DOCKER_EXE} image remove --force ${_images} 2>/dev/null
     ${DOCKER_EXE} image prune --force > /dev/null 2>&1
