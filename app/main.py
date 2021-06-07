@@ -1,9 +1,15 @@
+import os
 from typing import Optional
 from fastapi import FastAPI
 from pydantic import BaseModel
 from httpx import AsyncClient
 
-app = FastAPI()
+# https://fastapi.tiangolo.com/tutorial/metadata/
+app = FastAPI(
+    title = os.environ.get("APP_NAME"),
+    description = os.environ.get("APP_DESCRIPTION"),
+    version = os.environ.get("APP_VERSION"),
+)
 
 
 class Item(BaseModel):
