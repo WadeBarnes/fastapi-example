@@ -1,6 +1,6 @@
 import os
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from httpx import AsyncClient
 
@@ -42,3 +42,25 @@ async def read_uuid():
     async with AsyncClient() as client:
         response = await client.get(URL)
     return response.json()
+
+
+# Referances:
+#   - https://fastapi.tiangolo.com/advanced/using-request-directly/
+#   - https://www.starlette.io/requests/#query-parameters
+# Example Query:
+#   http://localhost:8080/arbitrary-query-params?status=true&alerts=true&example=true&another=someOtherValue
+#   Response:
+#   {
+#       "client_host": "172.30.0.1",
+#       "query_params": {
+#           "status": "true",
+#           "alerts": "true",
+#           "example": "true",
+#           "another": "someOtherValue"
+#       }
+#   }
+@app.get("/arbitrary-query-params")
+async def read_arbitrary_query_params(request: Request):
+    client_host = request.client.host
+    query_params = request.query_params
+    return {"client_host": client_host, "query_params": query_params}
