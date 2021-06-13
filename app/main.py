@@ -22,7 +22,7 @@ tags_metadata = [
         "name": "Items Examples",
         "description": "Manage items. So _fancy_ they have their own docs.",
         "externalDocs": {
-            "description": "Referance",
+            "description": "Reference",
             "url": "https://fastapi.tiangolo.com/#example",
         },
     },
