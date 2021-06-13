@@ -6,11 +6,36 @@ from fastapi import FastAPI, Request, Query, Depends
 from pydantic import BaseModel
 from httpx import AsyncClient
 
+tags_metadata = [
+    {
+        "name": "Hello World",
+        "description": "A very simple 'Hello World' example.",
+    },
+    {
+        "name": "Items Examples",
+        "description": "Manage items. So _fancy_ they have their own docs.",
+        "externalDocs": {
+            "description": "Referance",
+            "url": "https://fastapi.tiangolo.com/#example",
+        },
+    },
+    {
+        "name": "Calling an External API",
+        "description": "An example of how to call an external API from your REST API.",
+    },
+    {
+        "name": "Supporting an Arbitrary Number of Query Parameters",
+        "description": "Examples of how to support an arbitrary number of query parameters.",
+    },
+]
+
+
 # https://fastapi.tiangolo.com/tutorial/metadata/
 app = FastAPI(
     title = os.environ.get("APP_NAME"),
     description = os.environ.get("APP_DESCRIPTION"),
     version = os.environ.get("APP_VERSION"),
+    openapi_tags=tags_metadata
 )
 
 
@@ -20,17 +45,17 @@ class Item(BaseModel):
     is_offer: Optional[bool] = None
 
 
-@app.get("/")
-async def read_root():
+@app.get("/", tags=["Hello World"])
+async def hello_world():
     return {"Message": "Hello World!"}
 
 
-@app.get("/items/{item_id}")
+@app.get("/items/{item_id}", tags=["Items Examples"])
 async def read_item(item_id: int, q: Optional[str] = None):
     return {"item_id": item_id, "q": q}
 
 
-@app.put("/items/{item_id}")
+@app.put("/items/{item_id}", tags=["Items Examples"])
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "is_now": item.price, "item_id": item_id}
 
@@ -39,7 +64,7 @@ def update_item(item_id: int, item: Item):
 #  - https://stackoverflow.com/questions/63872924/how-can-i-send-an-http-request-from-my-fastapi-app-to-another-site-api
 #  - https://fastapi.tiangolo.com/advanced/async-tests/#httpx
 URL = "https://httpbin.org/uuid"
-@app.get("/uuid")
+@app.get("/uuid", tags=["Calling an External API"])
 async def read_uuid():
     async with AsyncClient() as client:
         response = await client.get(URL)
@@ -69,7 +94,7 @@ async def read_uuid():
 #       }
 #   }
 # -----------------------------------------------------------------------------------------------------------
-@app.get("/arbitrary-query-params")
+@app.get("/arbitrary-query-params", tags=["Supporting an Arbitrary Number of Query Parameters"])
 async def read_arbitrary_query_params(request: Request):
     client_host = request.client.host
     query_params = request.query_params
@@ -81,8 +106,8 @@ async def read_arbitrary_query_params(request: Request):
 # Referances:
 #   - https://github.com/tiangolo/fastapi/issues/1415
 # ToDo:
-#   - Finish going through this example.  At this point in the 
-#     example parameters must be sent as json, which is not 
+#   - Finish going through this example.  At this point in the
+#     example parameters must be sent as json, which is not
 #     always ideal.  The following responses to the issue
 #     seem to suggest other ways that allow the parameters
 #     to be defined whithout having to define as json.
@@ -122,7 +147,7 @@ def items_dict(locations: List[str] = Query(...)):
 #     }
 #   ]
 # }
-@app.get("/test")
+@app.get("/test", tags=["Supporting an Arbitrary Number of Query Parameters"])
 def operation(query_params: list = Depends(items_dict)):
     return {"query_params": query_params}
 # ============================================================
