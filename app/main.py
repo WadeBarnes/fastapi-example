@@ -1,6 +1,8 @@
 import os
+import json
+from typing import List
 from typing import Optional
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query, Depends
 from pydantic import BaseModel
 from httpx import AsyncClient
 
@@ -43,7 +45,14 @@ async def read_uuid():
         response = await client.get(URL)
     return response.json()
 
-
+# ===========================================================================================================
+# Example showing how to use the request object directly to get any query parameters.
+# The downside to this approach is the auto-generated documentation does not contain any indication
+# the endpoint accepts any query parameters at all.
+#
+# ToDo:
+#   - Add documentation about the params, so it's included in the auto-generated docs.
+#
 # Referances:
 #   - https://fastapi.tiangolo.com/advanced/using-request-directly/
 #   - https://www.starlette.io/requests/#query-parameters
@@ -59,8 +68,61 @@ async def read_uuid():
 #           "another": "someOtherValue"
 #       }
 #   }
+# -----------------------------------------------------------------------------------------------------------
 @app.get("/arbitrary-query-params")
 async def read_arbitrary_query_params(request: Request):
     client_host = request.client.host
     query_params = request.query_params
     return {"client_host": client_host, "query_params": query_params}
+# ===========================================================================================================
+
+
+# ============================================================
+# Referances:
+#   - https://github.com/tiangolo/fastapi/issues/1415
+# ToDo:
+#   - Finish going through this example.  At this point in the 
+#     example parameters must be sent as json, which is not 
+#     always ideal.  The following responses to the issue
+#     seem to suggest other ways that allow the parameters
+#     to be defined whithout having to define as json.
+#     Although this could be useful for some use cases.
+# ------------------------------------------------------------
+def items_dict(locations: List[str] = Query(...)):
+    return list(map(json.loads, locations))
+
+
+# Request:
+#   http://localhost:8080/test?locations=%7B%22status%22%3A%20%22true%22%7D&locations=%7B%22alerts%22%3A%20%22true%22%7D&locations=%7B%22some_param_name%22%3A%20%22some_param_value%22%7D&locations=%7B%22some_param_name%22%3A%20%5B%7B%22sub_param_name_0%22%3A%20%22value_0%22%7D%2C%20%7B%22sub_param_name_1%22%3A%20%22value_1%22%7D%2C%20%7B%22sub_param_name_2%22%3A%20%22value_2%22%7D%5D%20%7D
+#
+# Response:
+# {
+#   "query_params": [
+#     {
+#       "status": "true"
+#     },
+#     {
+#       "alerts": "true"
+#     },
+#     {
+#       "some_param_name": "some_param_value"
+#     },
+#     {
+#       "some_param_name": [
+#         {
+#           "sub_param_name_0": "value_0"
+#         },
+#         {
+#           "sub_param_name_1": "value_1"
+#         },
+#         {
+#           "sub_param_name_2": "value_2"
+#         }
+#       ]
+#     }
+#   ]
+# }
+@app.get("/test")
+def operation(query_params: list = Depends(items_dict)):
+    return {"query_params": query_params}
+# ============================================================
