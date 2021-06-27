@@ -7,6 +7,9 @@ from pydantic import BaseModel, Field
 from httpx import AsyncClient
 
 # ToDo:
+# Add Response Example:
+#   - https://fastapi.tiangolo.com/tutorial/response-model/
+#
 # Add Response Documentation Example:
 #   - https://fastapi.tiangolo.com/tutorial/schema-extra-example/#body-with-multiple-examples
 
